@@ -24,19 +24,10 @@ cd ca
 openssl genrsa -out ca.key 4096
 chmod 600 ca.key
 
-# Create ca.ext file
-cat > ca.ext <<EOF
-[ v3_ca ]
-basicConstraints = critical, CA:true
-keyUsage = critical, keyCertSign, cRLSign
-subjectKeyIdentifier = hash
-EOF
-
 # Generate CA certificate
-openssl req -x509 -new -nodes -days 3650 -sha256 \
+urmi@urmi-HP-Laptop:~/certs$ openssl req -x509 -new -nodes -days 3650 -sha256 \
   -key ca.key -out ca.crt \
-  -subj "/CN=backup.local/O=kubedb" \
-  -extensions v3_ca -extfile ca.ext
+  -subj "/CN=backup.local/O=kubedb"
 ```
 
 Verify:
