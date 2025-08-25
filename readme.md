@@ -168,7 +168,7 @@ func main() {
 Run:
 
 ```bash
-go run server.go
+go run main.go
 ```
 
 ---
