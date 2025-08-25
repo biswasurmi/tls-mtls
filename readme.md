@@ -1,3 +1,5 @@
+---
+
 # TLS + mTLS Setup Guide
 
 This guide shows how to generate a Certificate Authority (CA), server certificate, and client certificate for testing TLS and mutual TLS (mTLS) with a Go server.
@@ -15,6 +17,9 @@ mkdir -p certs && cd certs
 ## 🔑 Create a Certificate Authority (CA)
 
 ```bash
+mkdir ca
+cd ca
+
 # Generate CA private key
 openssl genrsa -out ca.key 4096
 chmod 600 ca.key
@@ -45,6 +50,10 @@ openssl x509 -in ca.crt -noout -text | grep "CA:TRUE"
 ## 🖥️ Create Server Certificate
 
 ```bash
+cd ../
+mkdir server
+cd server
+
 # Generate server key and CSR
 openssl req -newkey rsa:2048 -nodes \
   -keyout server.key -out server.csr \
@@ -66,7 +75,7 @@ IP.1  = 127.0.0.1
 EOF
 
 # Sign server cert with CA
-openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial \
+openssl x509 -req -in server.csr -CA ../ca/ca.crt -CAkey ../ca/ca.key -CAcreateserial \
   -out server.crt -days 825 -sha256 \
   -extensions v3_req -extfile server.ext
 ```
@@ -74,7 +83,7 @@ openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial \
 Verify:
 
 ```bash
-openssl verify -CAfile ca.crt server.crt
+openssl verify -CAfile ../ca/ca.crt server.crt
 openssl x509 -in server.crt -noout -text | grep -A2 "Subject Alternative Name"
 ```
 
@@ -83,6 +92,10 @@ openssl x509 -in server.crt -noout -text | grep -A2 "Subject Alternative Name"
 ## 👤 Create Client Certificate (for mTLS)
 
 ```bash
+cd ../
+mkdir client
+cd client
+
 # Generate client key and CSR
 openssl req -newkey rsa:2048 -nodes \
   -keyout client.key -out client.csr \
@@ -98,7 +111,7 @@ extendedKeyUsage = clientAuth
 EOF
 
 # Sign client cert with CA
-openssl x509 -req -in client.csr -CA ca.crt -CAkey ca.key -CAcreateserial \
+openssl x509 -req -in client.csr -CA ../ca/ca.crt -CAkey ../ca/ca.key -CAcreateserial \
   -out client.crt -days 825 -sha256 \
   -extensions v3_req -extfile client.ext
 ```
@@ -106,7 +119,7 @@ openssl x509 -req -in client.csr -CA ca.crt -CAkey ca.key -CAcreateserial \
 Verify:
 
 ```bash
-openssl verify -CAfile ca.crt client.crt
+openssl verify -CAfile ../ca/ca.crt client.crt
 ```
 
 ---
@@ -128,7 +141,7 @@ import (
 
 func main() {
     // Load CA cert to verify client certs
-    caCert, _ := ioutil.ReadFile("ca.crt")
+    caCert, _ := ioutil.ReadFile("ca/ca.crt")
     caCertPool := x509.NewCertPool()
     caCertPool.AppendCertsFromPEM(caCert)
 
@@ -148,7 +161,7 @@ func main() {
     }
 
     fmt.Println("Starting mTLS server on https://backup.local:8443")
-    panic(srv.ListenAndServeTLS("server.crt", "server.key"))
+    panic(srv.ListenAndServeTLS("server/server.crt", "server/server.key"))
 }
 ```
 
@@ -165,15 +178,15 @@ go run server.go
 ### Without client cert (❌ rejected)
 
 ```bash
-curl https://backup.local:8443 --cacert ./ca.crt --resolve backup.local:8443:127.0.0.1
+curl https://backup.local:8443 --cacert ./ca/ca.crt --resolve backup.local:8443:127.0.0.1
 ```
 
 ### With client cert (✅ success)
 
 ```bash
 curl https://backup.local:8443 \
-  --cacert ./ca.crt \
-  --cert ./client.crt --key ./client.key \
+  --cacert ./ca/ca.crt \
+  --cert ./client/client.crt --key ./client/client.key \
   --resolve backup.local:8443:127.0.0.1
 ```
 
@@ -185,11 +198,38 @@ Hello, mTLS world!
 
 ---
 
+## Project Structure
+
+├── ca
+│   ├── ca.crt
+│   ├── ca.key
+│   └── ca.srl
+├── client
+│   ├── client.crt
+│   ├── client.csr
+│   ├── client.ext
+│   └── client.key
+├── readme.md
+├── server
+│   ├── server.crt
+│   ├── server.csr
+│   ├── server.ext
+│   └── server.key
+└── server.go
+
+4 directories, 13 files
+
+---
+
+---
+
 ## 📝 Summary
 
-* `ca.crt` / `ca.key`: Root CA
-* `server.crt` / `server.key`: Server certificate
-* `client.crt` / `client.key`: Client certificate (for mTLS)
+* `ca/ca.crt` / `ca/ca.key`: Root CA
+* `server/server.crt` / `server/server.key`: Server certificate
+* `client/client.crt` / `client/client.key`: Client certificate (for mTLS)
 * `server.ext` & `client.ext`: Extension config files
+
+---
 
 

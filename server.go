@@ -10,7 +10,7 @@ import (
 
 func main() {
     // Load CA cert to verify client certs
-    caCert, err := ioutil.ReadFile("ca.crt")
+    caCert, err := ioutil.ReadFile("ca/ca.crt")
     if err != nil {
         panic(err)
     }
@@ -35,7 +35,7 @@ func main() {
     }
 
     fmt.Println("Starting mTLS server on https://backup.local:8443")
-    err = srv.ListenAndServeTLS("server.crt", "server.key")
+    err = srv.ListenAndServeTLS("server/server.crt", "server/server.key")
     if err != nil {
         panic(err)
     }
