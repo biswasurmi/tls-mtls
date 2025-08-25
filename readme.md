@@ -224,8 +224,6 @@ Hello, mTLS world!
 
 ---
 
----
-
 ## 📝 Summary
 
 * `ca/ca.crt` / `ca/ca.key`: Root CA
