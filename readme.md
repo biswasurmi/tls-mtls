@@ -6,6 +6,11 @@ This guide shows how to generate a Certificate Authority (CA), server certificat
 
 ---
 
+## What is TLS and mTLS?
+
+* `TLS:` Ensures secure communication by encrypting data between a client (e.g., a browser or curl) and a server. The server presents a certificate to prove its identity, and the client trusts it if it’s signed by a trusted Certificate Authority (CA).
+* `mTLS:` Extends TLS by requiring the client to also present a certificate, which the server verifies. This ensures both parties are trusted, making it ideal for secure environments like APIs or microservices.
+
 ## 📂 Setup Working Directory
 
 ```bash
