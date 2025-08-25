@@ -200,6 +200,8 @@ Hello, mTLS world!
 
 ## Project Structure
 
+```bash
+.
 ├── ca
 │   ├── ca.crt
 │   ├── ca.key
@@ -218,6 +220,7 @@ Hello, mTLS world!
 └── server.go
 
 4 directories, 13 files
+```
 
 ---
 
